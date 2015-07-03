@@ -22,7 +22,7 @@ import org.junit.Test;
 public class TestSSL {
 	protected final int timeOut = 120 * 1000;
 	protected String userID = "hzhangse@cn.ibm.com";
-	protected String password = "passw8rd";
+	protected String password = "passw9rd";
 	protected String httpSchema = "http";
 	protected String httpsSchema = "https";
 	protected String url = "://smallbluetest.ibm.com/services/smallblue/j_security_check";
@@ -70,22 +70,23 @@ public class TestSSL {
 		return response.toString();
 	}
 
-	protected int executeWithResponse(HttpClient client, HttpMethod method)
+	protected String executeWithResponse(HttpClient client, HttpMethod method)
 			throws CommunicationException {
 		int status = 0;
+		String response = "";
 		try {
 			client.getHttpConnectionManager().getParams()
 					.setConnectionTimeout(timeOut);
 			status = client.executeMethod(method);
 			
-			getResponse(method);
+			 response = getResponse(method);
 		} catch (HttpException e) {
 			throw new CommunicationException(e.getMessage());
 		} catch (IOException e) {
 			throw new CommunicationException(e.getMessage());
 		}
 
-		return status;
+		return response;
 	}
 
 	@Test
@@ -117,7 +118,7 @@ public class TestSSL {
 			executeWithResponse(client, getMethod);
 		} catch (Exception e) {
 			e.printStackTrace();
-			authpost.releaseConnection();
+			getMethod.releaseConnection();
 
 		}
 	}
