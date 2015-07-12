@@ -4,8 +4,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -26,8 +28,10 @@ import org.json.JSONObject;
 
 public class TestAnalysTools  {
 	Map<String, Object> sycCount = java.util.Collections
-			.synchronizedMap(new HashMap<String, Object>());
-	final CountDownLatch end = new CountDownLatch(100);
+			.synchronizedMap(new TreeMap<String, Object>());
+	
+	final static int concurrent  =100;
+	final CountDownLatch end = new CountDownLatch(concurrent);
 
 	protected final int timeOut = 120 * 1000;
 	protected String userID = "hzhangse@cn.ibm.com";
@@ -59,7 +63,7 @@ public class TestAnalysTools  {
 		InputStream response_is;
 		try {
 			response_is = method.getResponseBodyAsStream();
-
+			System.out.println("the response for http request:" + method.getQueryString());
 			InputStreamReader reader = new InputStreamReader(response_is);
 			BufferedReader reader_buffered = new BufferedReader(reader);
 			String line = reader_buffered.readLine();
@@ -123,7 +127,7 @@ public class TestAnalysTools  {
 
 		ExecutorService pool = Executors.newFixedThreadPool(200);
 
-		for (int i = 0; i < 100; i++) {
+		for (int i = 0; i < concurrent; i++) {
 			MyThread t = new MyThread();
 			t.requestNo = String.valueOf(i);
 			t.defHttp = client;
@@ -131,7 +135,11 @@ public class TestAnalysTools  {
 		}
 		end.await();
 
-		System.out.println("total size of processid:" + sycCount.size());
+		
+		System.out.println("\ntotal size of processid:" + sycCount.size());
+		
+		System.out.println("returned processid list:" );
+		
 		for (String prossid : sycCount.keySet()) {
 			System.out.println(prossid);
 		}
@@ -147,9 +155,11 @@ public class TestAnalysTools  {
 			GetMethod httpGetDoc = new GetMethod(
 					"https://smallbluetest.ibm.com/services/smallblue/analyticstool?action=search&keyword=ibm"
 							+ requestNo);
-			System.out.println("clientNo=" + requestNo);
+			System.out.println("send request:" + "https://smallbluetest.ibm.com/services/smallblue/analyticstool?action=search&keyword=ibm"
+					+ requestNo+"\n");
 			String processid = "";
 			try {
+				
 				String response = executeWithResponse(defHttp, httpGetDoc);
 				JSONObject job = new JSONObject(response);
 				processid = job.get("processid").toString();
